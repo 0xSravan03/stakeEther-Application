@@ -94,7 +94,10 @@ describe("Staking", function () {
       const tx = await Staking.stakeEther(30, {
         value: ethers.utils.parseEther("5"),
       });
-      await tx.wait();
+      const receipt = await tx.wait();
+
+      const blockNumber = receipt.blockNumber;
+      const block = await ethers.provider.getBlock(blockNumber);
 
       const positionNew = await Staking.positions(0);
       expect(positionNew.positionId).to.equal(0);
@@ -102,6 +105,13 @@ describe("Staking", function () {
       expect(positionNew.weiStaked).to.equal(ethers.utils.parseEther("5"));
       expect(positionNew.open).to.equal(true);
       expect(positionNew.percentInterest).to.equal(700);
+      expect(positionNew.createdDate).to.equal(block.timestamp);
+      expect(positionNew.unlockDate).to.equal(block.timestamp + 86400 * 30);
+      expect(positionNew.weiInterest).to.equal(
+        ethers.BigNumber.from(700)
+          .mul(ethers.utils.parseEther("5"))
+          .div(ethers.BigNumber.from(10000))
+      );
     });
   });
 });
