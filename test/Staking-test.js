@@ -78,5 +78,30 @@ describe("Staking", function () {
         Staking.stakeEther(50, { value: ethers.utils.parseEther("8") })
       ).to.be.revertedWith("ERROR: NO.OF DAYS NOT FOUND");
     });
+
+    it("should add a position to Positions", async function () {
+      // Before calling Stake function
+      const position = await Staking.positions(0);
+      expect(position.positionId).to.equal(0);
+      expect(position.walletAddress).to.equal(ethers.constants.AddressZero);
+      expect(position.createdDate).to.equal(0);
+      expect(position.unlockDate).to.equal(0);
+      expect(position.percentInterest).to.equal(0);
+      expect(position.weiStaked).to.equal(0);
+      expect(position.weiInterest).to.equal(0);
+      expect(position.open).to.equal(false);
+
+      const tx = await Staking.stakeEther(30, {
+        value: ethers.utils.parseEther("5"),
+      });
+      await tx.wait();
+
+      const positionNew = await Staking.positions(0);
+      expect(positionNew.positionId).to.equal(0);
+      expect(positionNew.walletAddress).to.equal(Staking.signer.address);
+      expect(positionNew.weiStaked).to.equal(ethers.utils.parseEther("5"));
+      expect(positionNew.open).to.equal(true);
+      expect(positionNew.percentInterest).to.equal(700);
+    });
   });
 });
