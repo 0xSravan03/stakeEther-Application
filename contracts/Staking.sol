@@ -38,6 +38,7 @@ contract Staking {
     error Staking__Owner_Error();
 
     function stakeEther(uint256 numDays) external payable {
+        require(msg.value > 0, "ERROR: INVALID ETH AMOUNT");
         require(tiers[numDays] > 0, "ERROR: NO.OF DAYS NOT FOUND");
         positions[currentPositionId] = Position({
             positionId: currentPositionId,
