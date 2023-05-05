@@ -1,1 +1,1 @@
-# ERC20 Staking App
+# ETH Staking App

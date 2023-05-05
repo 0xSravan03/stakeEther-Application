@@ -99,4 +99,36 @@ contract Staking {
     ) external view returns (uint256[] memory) {
         return positionIdsByAddress[walletAddress];
     }
+
+    /* Allow Owner of the contract to change the unlock date for a particular staking*/
+    function changeUnlockDate(
+        uint256 positionId,
+        uint256 newUnlockDate
+    ) external onlyOwner {
+        positions[positionId].unlockDate = newUnlockDate;
+    }
+
+    /* Allow user to unstake ETH .
+     * If user Unstake ETH before unlock period, user will only get staked amount
+       else user will get StakedAmt + interst */
+    function closePosition(uint256 positionId) external {
+        require(
+            positions[positionId].walletAddress == msg.sender,
+            "ERROR: INVALID STAKING"
+        );
+        require(positions[positionId].open == true, "ERROR: POSITION CLOSED");
+
+        positions[positionId].open == false;
+
+        if (block.timestamp > positions[positionId].unlockDate) {
+            uint256 amount = positions[positionId].weiStaked +
+                positions[positionId].weiInterest;
+            (bool sent, ) = payable(msg.sender).call{value: amount}("");
+            require(sent, "ERROR: TRANSFER FAILED");
+        } else {
+            uint amount = positions[positionId].weiStaked;
+            (bool sent, ) = payable(msg.sender).call{value: amount}("");
+            require(sent, "ERROR: TRANSFER FAILED");
+        }
+    }
 }
