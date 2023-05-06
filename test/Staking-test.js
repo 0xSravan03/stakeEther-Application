@@ -114,4 +114,26 @@ describe("Staking", function () {
       );
     });
   });
+
+  describe("lock period", function () {
+    it("owner should able to add / modify the lock period", async function () {
+      // adding new lockperiod
+      const tx = await Staking.modifyLockPeriods(45, 900);
+      await tx.wait();
+      expect(await Staking.tiers(45)).to.equal(900);
+
+      // modifying existing lockperiod
+      const txn = await Staking.modifyLockPeriods(30, 800);
+      await txn.wait();
+      expect(await Staking.tiers(30)).to.equal(800);
+    });
+
+    it("only owner should able to add / modify lock period", async function () {
+      const [, user] = await ethers.getSigners(); // Getting second account
+      const StakingNew = await Staking.connect(user);
+      await expect(
+        StakingNew.modifyLockPeriods(45, 900)
+      ).to.be.revertedWithCustomError(StakingNew, "Staking__Owner_Error");
+    });
+  });
 });
