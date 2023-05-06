@@ -136,4 +136,27 @@ describe("Staking", function () {
       ).to.be.revertedWithCustomError(StakingNew, "Staking__Owner_Error");
     });
   });
+
+  describe("change unlock date", function () {
+    it("owner should able to change the unlock date of a position", async function () {
+      const [owner, user] = await ethers.getSigners();
+      const StakingNew = await Staking.connect(user);
+      const tx = await StakingNew.stakeEther(30, {
+        value: ethers.utils.parseEther("8"),
+      });
+      await tx.wait();
+      const position = await StakingNew.positions(0);
+      expect(position.positionId).to.equal(0);
+      expect(position.walletAddress).to.equal(user.address);
+
+      const StakingOwner = await Staking.connect(owner);
+
+      // Math.floor(Date.now() / 1000) - return current unix timestamp in seconds
+      const newUnlockDate = Math.floor(Date.now() / 1000) + 86400 * 180;
+      const txn = await StakingOwner.changeUnlockDate(0, newUnlockDate);
+      await txn.wait();
+      const positionNew = await StakingNew.positions(0);
+      expect(positionNew.unlockDate).to.equal(newUnlockDate);
+    });
+  });
 });
