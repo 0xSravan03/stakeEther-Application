@@ -1,5 +1,7 @@
 const { ethers } = require("hardhat");
 const { assert, expect } = require("chai");
+const moveBlock = require("../utils/moveBlock");
+const moveTime = require("../utils/moveTime");
 
 describe("Staking", function () {
   let Staking;
@@ -157,6 +159,50 @@ describe("Staking", function () {
       await txn.wait();
       const positionNew = await StakingNew.positions(0);
       expect(positionNew.unlockDate).to.equal(newUnlockDate);
+    });
+  });
+
+  describe("close position", function () {
+    it("only position creator can close it", async function () {
+      const [, user1, user2] = await ethers.getSigners();
+      const Stake = await Staking.connect(user1);
+      const tx = await Stake.stakeEther(30, {
+        value: ethers.utils.parseEther("15"),
+      });
+      await tx.wait();
+      const position = await Stake.positions(0);
+      expect(position.walletAddress).to.equal(user1.address);
+
+      const StakeNew = await Staking.connect(user2);
+      await expect(StakeNew.closePosition(0)).to.be.revertedWith(
+        "ERROR: INVALID STAKING"
+      );
+    });
+
+    it("should return only staked ETH if closed before unlockdate", async function () {
+      const [, user] = await ethers.getSigners();
+      const UserStake = await Staking.connect(user);
+      const tx = await UserStake.stakeEther(30, {
+        value: ethers.utils.parseEther("15"),
+      });
+      await tx.wait();
+
+      const balanceBeforeUnStake = await user.getBalance();
+
+      await moveBlock(1);
+      await moveTime(25 * 86400);
+
+      const txn = await UserStake.closePosition(0);
+      const receipt = await txn.wait();
+      const gasUsed = receipt.gasUsed;
+      const effectiveGasPrice = receipt.effectiveGasPrice;
+      const gasFees = gasUsed.mul(effectiveGasPrice);
+
+      const balanceAfterUnStake = await user.getBalance();
+
+      expect(balanceAfterUnStake).to.equal(
+        balanceBeforeUnStake.add(ethers.utils.parseEther("15")).sub(gasFees)
+      );
     });
   });
 });
