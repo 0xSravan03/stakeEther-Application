@@ -204,5 +204,43 @@ describe("Staking", function () {
         balanceBeforeUnStake.add(ethers.utils.parseEther("15")).sub(gasFees)
       );
     });
+
+    it("should return staked ETH and interest if closed after unlockdate", async function () {
+      const [, user1] = await ethers.getSigners();
+      const Stake = await Staking.connect(user1);
+      const tx = await Stake.stakeEther(30, {
+        value: ethers.utils.parseEther("10"),
+      });
+      await tx.wait();
+
+      const position = await Stake.positions(0);
+      expect(position.walletAddress).to.equal(user1.address);
+
+      const userBalanceBeforeUnstake = await user1.getBalance();
+
+      await moveBlock(1);
+      await moveTime(31 * 86400);
+
+      const txn = await Stake.closePosition(0);
+      const txnReceipt = await txn.wait();
+
+      const gasUsed = txnReceipt.gasUsed;
+      const effectiveGasPrice = txnReceipt.effectiveGasPrice;
+      const gasFees = gasUsed.mul(effectiveGasPrice);
+
+      const userBalanceAfterStake = await user1.getBalance();
+
+      // basis point for 30 days is 700.
+      const interestGot = ethers.BigNumber.from(700)
+        .mul(ethers.utils.parseEther("10"))
+        .div(ethers.BigNumber.from(10000));
+
+      expect(userBalanceAfterStake).to.equal(
+        userBalanceBeforeUnstake
+          .add(ethers.utils.parseEther("10"))
+          .add(interestGot)
+          .sub(gasFees)
+      );
+    });
   });
 });
