@@ -11,14 +11,17 @@ export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
   const web3modalRef = useRef();
   const [contract, setContract] = useState(undefined);
+  const [signer, setSigner] = useState(undefined);
 
   const [assetIds, setAssetIds] = useState([]);
   const [assets, setAssets] = useState([]);
 
   // Staking
-  const [stakingPeriod, setStakingPeriod] = useState("");
-  const [stakingPercentage, setStakingPercentage] = useState(""); // interest for staking
+  const [showStakeModal, setShowStakeModal] = useState(false);
+  const [stakingLength, setStakingLength] = useState(undefined);
+  const [stakingPercent, setStakingPercent] = useState(undefined); // interest for staking
   const [stakeAmount, setStakeAmount] = useState(0);
+  const [amount, setAmount] = useState(0);
 
   // Return a new contract instance connected to the signer
   async function createContractInstance(signer) {
@@ -29,12 +32,20 @@ export default function Home() {
     );
   }
 
-  async function getAssetIds(address) {
+  async function getAssetIds(address, signer) {
+    const contract = await createContractInstance(signer);
     const assetIds = await contract.getPositionIdsForAddress(address);
     setAssetIds(assetIds);
   }
 
-  const getAssets = async (ids) => {
+  const calcDaysRemaining = (unlockDate) => {
+    const timeNow = Date.now() / 1000; // unix timestamp in seconds
+    const secondsRemaining = unlockDate - timeNow;
+    return Math.max((secondsRemaining / 60 / 60 / 24).toFixed(0), 0);
+  };
+
+  const getAssets = async (ids, signer) => {
+    const contract = await createContractInstance(signer);
     const queriedAssets = await Promise.all(
       ids.map((id) => contract.getPositionById(id))
     );
@@ -53,11 +64,32 @@ export default function Home() {
     });
   };
 
+  const openStakingModal = (stakingLength, stakingPercent) => {
+    setShowStakeModal(true);
+    setStakingLength(stakingLength);
+    setStakingPercent(stakingPercent);
+  };
+
+  const stakeEther = async () => {
+    const weiAmt = await ethToWei(amount);
+    const contract = await createContractInstance(signer);
+    const txn = await contract.stakeEther(stakingLength, { value: weiAmt });
+    await txn.wait();
+  };
+
+  const withdraw = async (positionId) => {
+    const contract = await createContractInstance(signer);
+    const txn = await contract.closePosition(positionId);
+    await txn.wait();
+  };
+
   async function connectWallet() {
     try {
       const instance = await web3modalRef.current.connect();
       const provider = new ethers.providers.Web3Provider(instance);
       const signer = provider.getSigner();
+      setSigner(signer);
+      const signerAddress = await signer.getAddress();
 
       if ((await provider.getNetwork()).chainId !== StakeContract.chainId) {
         window.alert("Wrong Network");
@@ -68,6 +100,12 @@ export default function Home() {
       // Creating a contract instance.
       const contract = await createContractInstance(signer);
       setContract(contract);
+
+      // Loading connected user assets
+      await getAssetIds(signerAddress, signer);
+      if (assetIds.length !== 0) {
+        await getAssets(assetIds, signer);
+      }
 
       return signer;
     } catch (error) {
