@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 import StakeContract from "@/contracts/contract.json";
 import { weiToEth, ethToWei } from "@/utils/helper-functions";
+import Navbar from "@/components/Navbar/Navbar";
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -124,10 +125,10 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <h1>Hello World</h1>
-        <button onClick={connectWallet}>
-          {walletConnected ? "Connected" : "Connect Wallet"}
-        </button>
+        <Navbar
+          connectWallet={connectWallet}
+          walletConnected={walletConnected}
+        />
       </div>
     </main>
   );

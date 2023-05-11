@@ -1,0 +1,27 @@
+.navButton {
+    float: left;
+    display: inline-block;
+    margin-left: 24px;
+    padding: 5px;
+    color: #1168f1;
+    font-size: 24px;
+  }
+  .connectButton {
+    float: right;
+    margin-right: 24px;
+    background-color: #1168f1;
+    border-radius: 4px;
+    padding: 5px 15px;
+    color: #f1f1f3;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .connectButton:hover {
+    background-color: #f90;
+  }
+  .navBar {
+    padding-top: 18px;
+    overflow: hidden;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(17, 104, 241, 0.08);
+  }
