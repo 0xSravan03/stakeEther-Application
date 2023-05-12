@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar/Navbar";
 import Image from "next/image";
 import { Bank, PiggyBank, Coin } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.css";
+import StakeModal from "@/components/Stakemodal/StakeModal";
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -209,7 +210,59 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <div className={styles.assetContainer}>
+          <div className={styles.subContainer}>
+            <span className={styles.marketHeader}>Staked Assets</span>
+          </div>
+          <div>
+            <div className={`row ${styles.columnHeaders}`}>
+              <div className="col-md-2">Assets</div>
+              <div className="col-md-2">Percent Interest</div>
+              <div className="col-md-2">Staked</div>
+              <div className="col-md-2">Interest</div>
+              <div className="col-md-2">Days Remaining</div>
+              <div className="col-md-2"></div>
+            </div>
+          </div>
+          <br />
+          {assets.length > 0 &&
+            assets.map((a, idx) => (
+              <div className="row" id={idx}>
+                <div className="col-md-2">
+                  <span>
+                    <img className={styles.stakedLogoImg} src="eth-logo.webp" />
+                  </span>
+                </div>
+                <div className="col-md-2">{a.percentInterest} %</div>
+                <div className="col-md-2">{a.etherStaked}</div>
+                <div className="col-md-2">{a.etherInterest}</div>
+                <div className="col-md-2">{a.daysRemaining}</div>
+                <div className="col-md-2">
+                  {a.open ? (
+                    <div
+                      onClick={() => withdraw(a.positionId)}
+                      className={styles.orangeMiniButton}
+                    >
+                      Withdraw
+                    </div>
+                  ) : (
+                    <span>closed</span>
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
+      {showStakeModal && (
+        <StakeModal
+          onClose={() => setShowStakeModal(false)}
+          stakingLength={stakingLength}
+          stakingPercent={stakingPercent}
+          amount={amount}
+          setAmount={setAmount}
+          stakeEther={stakeEther}
+        />
+      )}
     </div>
   );
 }

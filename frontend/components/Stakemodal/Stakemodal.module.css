@@ -1,0 +1,49 @@
+.modalClass {
+    background-color: rgba(0,0,0,0.5);
+    position: fixed;
+    left: 0;
+    top: -400px;
+    right: 0px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(86, 90, 105);
+}
+
+.modalContent {
+    background-color: #fff;
+    width: 300px !important;
+    padding: 0px 15px;
+    background-color: rgb(237, 238, 242) !important;
+    border: 1px solid rgb(206, 208, 217) !important;
+    border-radius: 12px !important;
+}
+
+.inputField {
+    padding-left: 10px;
+    border-radius: 36px;
+    border: 1px solid #65cdee;
+    height: 2rem;
+    margin: 10px 0;
+    width: 100%;
+  }
+  .inputFieldUnitsContainer {
+    padding-left: 0px !important;
+    padding-top: 14px;
+  }
+
+  .stakingTerms {
+    color: blue;
+  }
+
+  .orangeButton {
+    width: 100%;
+    height: 45px;
+    line-height: 45px;
+    font-size: 24px;
+    color: #fff;
+    border-radius: 20px;
+    background-color: #dd2f81;
+    cursor: pointer
+  }
