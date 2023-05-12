@@ -7,6 +7,9 @@ import Web3Modal from "web3modal";
 import StakeContract from "@/contracts/contract.json";
 import { weiToEth, ethToWei } from "@/utils/helper-functions";
 import Navbar from "@/components/Navbar/Navbar";
+import Image from "next/image";
+import { Bank, PiggyBank, Coin } from "react-bootstrap-icons";
+import "bootstrap/dist/css/bootstrap.css";
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -76,12 +79,14 @@ export default function Home() {
     const contract = await createContractInstance(signer);
     const txn = await contract.stakeEther(stakingLength, { value: weiAmt });
     await txn.wait();
+    console.log("Successfully Staked Ether");
   };
 
   const withdraw = async (positionId) => {
     const contract = await createContractInstance(signer);
     const txn = await contract.closePosition(positionId);
     await txn.wait();
+    console.log("Successfully withdrawn Ether");
   };
 
   async function connectWallet() {
@@ -123,13 +128,88 @@ export default function Home() {
   }, []);
 
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
+    <div className={styles.App}>
+      <div>
         <Navbar
           connectWallet={connectWallet}
           walletConnected={walletConnected}
         />
       </div>
-    </main>
+
+      <div className={styles.appBody}>
+        <div className={styles.marketContainer}>
+          <div className={styles.subContainer}>
+            <span>
+              <Image
+                className={styles.logoImg}
+                src="/eth-logo-1.svg"
+                width={1}
+                height={1}
+              />
+            </span>
+            <span className={styles.marketHeader}>Ethereum Market</span>
+          </div>
+
+          <div className="row">
+            <div className="col-md-4">
+              <div
+                onClick={() => openStakingModal(30, "7%")}
+                className={styles.marketOption}
+              >
+                <div
+                  className={`${styles.glyphContainer} ${styles.hoverButton}`}
+                >
+                  <span className={styles.glyph}>
+                    <Coin />
+                  </span>
+                </div>
+                <div className={styles.optionData}>
+                  <span>1 Month</span>
+                  <span className={styles.optionPercent}>7%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <div
+                onClick={() => openStakingModal(90, "10%")}
+                className={styles.marketOption}
+              >
+                <div
+                  className={`${styles.glyphContainer} ${styles.hoverButton}`}
+                >
+                  <span className={styles.glyph}>
+                    <Coin />
+                  </span>
+                </div>
+                <div className={styles.optionData}>
+                  <span>3 Month</span>
+                  <span className={styles.optionPercent}>10%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <div
+                onClick={() => openStakingModal(180, "12%")}
+                className={styles.marketOption}
+              >
+                <div
+                  className={`${styles.glyphContainer} ${styles.hoverButton}`}
+                >
+                  <span className={styles.glyph}>
+                    <Coin />
+                  </span>
+                </div>
+                <div className={styles.optionData}>
+                  <span>6 Month</span>
+                  <span className={styles.optionPercent}>12%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
